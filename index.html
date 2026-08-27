@@ -342,6 +342,52 @@
                 opacity: 0;
             }
         }
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2.5rem;
+                line-height: 1.1;
+            }
+            .hero-content h3 {
+                font-size: 1rem;
+            }
+            .hero-content p {
+                font-size: 0.9rem;
+            }
+            
+            /* Make sidebar horizontal at bottom on mobile */
+            .sidebar {
+                top: auto;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 90%;
+                flex-direction: row;
+                justify-content: space-around;
+                padding: 10px 15px;
+                height: 60px;
+                border-radius: 30px;
+            }
+            
+            .sidebar.expanded {
+                width: 95%;
+                height: 60px;
+                padding: 10px 15px;
+            }
+            
+            .sidebar-logo, .menu-label, .sidebar-profile {
+                display: none !important; /* Hide logo, label, profile on mobile to save space */
+            }
+            
+            .nav-item {
+                padding: 5px;
+                justify-content: center;
+                width: auto;
+            }
+            
+            .nav-item span {
+                display: none !important; /* Only show icons on mobile */
+            }
+        }
     </style>
 </head>
 

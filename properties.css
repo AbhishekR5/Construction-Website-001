@@ -477,6 +477,9 @@
     .cp-title {
         font-size: 6vw;
     }
+    .cp-filter-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 768px) {
@@ -519,5 +522,19 @@
         position: absolute;
         right: 0;
         top: 0;
+    }
+    
+    .cp-filter-grid {
+        grid-template-columns: 1fr;
+    }
+    .property-filter-container {
+        padding: 4rem 4vw 1rem 4vw;
+    }
+    .cp-filter-title {
+        font-size: 1.8rem;
+    }
+    .cp-filter-tabs {
+        flex-wrap: wrap;
+        gap: 1rem;
     }
 }
