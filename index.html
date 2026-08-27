@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construction - We Create Legacies</title>
+    <!-- Use a modern Google font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="about.css">
+    <link rel="stylesheet" href="properties.css">
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        :root {
+            --primary-gold: #d8a06e;
+            --text-light: #f5f5f5;
+            --text-dark: #1a1a1a;
+            --sidebar-bg: rgba(255, 255, 255, 0.1);
+            --sidebar-border: rgba(255, 255, 255, 0.2);
+            --active-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+
+        .hero-container {
+            height: 500vh;
+            position: relative;
+        }
+
+        .sticky-wrapper {
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(15, 20, 25, 0.8) 0%, rgba(15, 20, 25, 0.2) 100%);
+            z-index: 1;
+        }
+
+        /* Glassmorphism Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+            z-index: 100;
+            background: rgba(15, 15, 25, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 65px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
+            transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .sidebar.expanded {
+            width: 260px;
+            padding: 20px 15px;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 0 10px;
+        }
+
+        .sidebar-logo svg {
+            width: 24px;
+            height: 24px;
+            fill: #fff;
+            flex-shrink: 0;
+            transition: fill 0.3s;
+        }
+
+        .sidebar.expanded .sidebar-logo svg {
+            fill: #4da6ff;
+        }
+        
+        .sidebar-logo-text {
+            color: #4da6ff;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            transition: opacity 0.3s, width 0.3s;
+        }
+
+        .sidebar.expanded .sidebar-logo-text {
+            opacity: 1;
+            width: auto;
+        }
+
+        /* Profile Block */
+        .sidebar-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+            opacity: 0;
+            height: 0;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .sidebar.expanded .sidebar-profile {
+            opacity: 1;
+            height: auto;
+            padding: 15px 10px;
+        }
+
+        .sidebar-profile-icon svg {
+            width: 32px;
+            height: 32px;
+            fill: #fff;
+        }
+
+        .sidebar-profile-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-profile-info h4 {
+            margin: 0;
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .sidebar-profile-info p {
+            margin: 0;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.75rem;
+        }
+
+        .menu-label {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.5);
+            padding: 0 10px;
+            margin-bottom: 5px;
+            opacity: 0;
+            height: 0;
+            overflow: hidden;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+        }
+
+        .sidebar.expanded .menu-label {
+            opacity: 1;
+            height: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 10px;
+            border-radius: 12px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .nav-item span {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+            transition: opacity 0.3s, width 0.3s;
+        }
+
+        .sidebar.expanded .nav-item span {
+            opacity: 1;
+            width: auto;
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+            fill: rgba(255,255,255,0.7);
+            transition: fill 0.3s ease;
+            flex-shrink: 0;
+            margin-left: 2px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .nav-item:hover svg, .nav-item.active svg {
+            fill: #fff;
+        }
+
+        /* Hero Content */
+        .hero-content {
+            position: absolute;
+            top: 50%;
+            left: 14rem;
+            /* Adjusted to make room for sidebar */
+            transform: translateY(-50%);
+            z-index: 10;
+            max-width: 600px;
+        }
+
+        .hero-content h1 {
+            font-size: 4.5rem;
+            line-height: 1.1;
+            font-weight: 700;
+            color: var(--primary-gold);
+            margin-bottom: 1.5rem;
+            letter-spacing: -1px;
+        }
+
+        .hero-content h3 {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+
+        .hero-content p {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: #d0d0d0;
+            margin-bottom: 3rem;
+            font-weight: 300;
+        }
+
+        .btn-primary {
+            display: inline-block;
+            background-color: var(--primary-gold);
+            color: #000;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #c9925e;
+            transform: translateY(-2px);
+        }
+
+        .scroll-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-top: 3rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            width: fit-content;
+        }
+
+        .chevron-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .chevron {
+            width: 24px;
+            height: 12px;
+            opacity: 0;
+            margin-top: -5px;
+            animation: cascade 2.5s infinite linear;
+        }
+
+        .chevron-1 { animation-delay: 0s; }
+        .chevron-2 { animation-delay: 0.5s; }
+        .chevron-3 { animation-delay: 1s; }
+
+        @keyframes cascade {
+            0% {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+            25% {
+                opacity: 0.8;
+                transform: translateY(0);
+            }
+            50% {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Glassmorphism Sidebar (Globally Fixed) -->
+    <nav class="sidebar" id="main-sidebar">
+        <div class="sidebar-logo">
+            <svg viewBox="0 0 24 24">
+                <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66l.95-2.3c3.8 1 7.29-.46 9.38-2.67A10.05 10.05 0 0 0 17 8z" />
+            </svg>
+            <span class="sidebar-logo-text">LOQO</span>
+        </div>
+
+
+
+        <div class="menu-label">MENU</div>
+
+        <a href="#" class="nav-item active">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" /></svg>
+            <span>Home</span>
+        </a>
+        <a href="#horizontal-about-wrapper" class="nav-item">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" /></svg>
+            <span>About</span>
+        </a>
+        <a href="#" class="nav-item">
+            <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" /></svg>
+            <span>Studio</span>
+        </a>
+        <a href="#" class="nav-item">
+            <svg viewBox="0 0 24 24"><path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z" /></svg>
+            <span>Projects</span>
+        </a>
+        <a href="#" class="nav-item">
+            <svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z" /></svg>
+            <span>Journals</span>
+        </a>
+        <a href="#" class="nav-item">
+            <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" /></svg>
+            <span>Contact</span>
+        </a>
+    </nav>
+
+    <div class="hero-container" id="hero">
+        <div class="sticky-wrapper">
+            <canvas id="scroll-canvas"></canvas>
+            <div class="overlay"></div>
+
+
+            <div class="hero-content">
+                <h1>WE DON'T JUST BUILD.<br>WE CREATE LEGACIES.</h1>
+                <h3>Construction. Development. Excellence.</h3>
+                <p>Building premium residential and commercial spaces across Bengaluru with a commitment to design,
+                    quality and lasting value.</p>
+                <div class="scroll-indicator">
+                    <span>SCROLL TO EXPLORE</span>
+                    <div class="chevron-wrapper">
+                        <svg class="chevron chevron-1" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="4 3 12 9 20 3"></polyline>
+                        </svg>
+                        <svg class="chevron chevron-2" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="4 3 12 9 20 3"></polyline>
+                        </svg>
+                        <svg class="chevron chevron-3" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="4 3 12 9 20 3"></polyline>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- Close hero-container -->
+
+    <!-- PROPERTY FILTER SECTION -->
+    <section id="property-filter-section" class="property-filter-container">
+        <div class="cp-advanced-filter">
+            <h2 class="cp-filter-title">Find Exceptional Properties Worth Investing In</h2>
+            <div class="cp-filter-tabs">
+                <button class="cp-tab active" data-type="ALL">BUY</button>
+                <button class="cp-tab" data-type="RESIDENTIAL">RENT</button>
+                <button class="cp-tab" data-type="COMMERCIAL">COMMERCIAL</button>
+            </div>
+            
+            <div class="cp-filter-grid">
+                <div class="cp-filter-group">
+                    <label><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg> Project Type</label>
+                    <select id="filter-type">
+                        <option value="ALL">All Types</option>
+                        <option value="Residential">Residential</option>
+                        <option value="Commercial">Commercial</option>
+                    </select>
+                </div>
+                
+                <div class="cp-filter-group">
+                    <label><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> Location</label>
+                    <select id="filter-location">
+                        <option value="ALL">All Locations</option>
+                        <option value="Whitefield">Whitefield</option>
+                        <option value="Sarjapur Road">Sarjapur Road</option>
+                        <option value="Yelahanka">Yelahanka</option>
+                        <option value="Devanahalli">Devanahalli</option>
+                        <option value="Hebbal">Hebbal</option>
+                        <option value="North Bengaluru">North Bengaluru</option>
+                        <option value="Electronic City">Electronic City</option>
+                        <option value="Koramangala">Koramangala</option>
+                    </select>
+                </div>
+                
+                <div class="cp-filter-group">
+                    <label><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> Construction Status</label>
+                    <select id="filter-status">
+                        <option value="ALL">All Statuses</option>
+                        <option value="Ongoing">Ongoing</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Upcoming">Upcoming</option>
+                    </select>
+                </div>
+                
+                <div class="cp-filter-group">
+                    <label><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Bedrooms</label>
+                    <select id="filter-bedrooms">
+                        <option value="ALL">All Sizes</option>
+                        <option value="2 BHK">2 BHK</option>
+                        <option value="3 BHK">3 BHK</option>
+                        <option value="4 BHK">4 BHK</option>
+                    </select>
+                </div>
+                
+                <div class="cp-filter-group" style="grid-column: span 2;">
+                    <label><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> Price Range</label>
+                    <select id="filter-price">
+                        <option value="ALL">Any Price</option>
+                        <option value="0-50000000">Under 5 Cr</option>
+                        <option value="50000000-150000000">5 Cr - 15 Cr</option>
+                        <option value="150000000-1000000000">15 Cr+</option>
+                    </select>
+                </div>
+                
+                <div class="cp-filter-actions">
+                    <button class="cp-btn-reset" id="filter-reset">RESET FILTERS</button>
+                    <div class="cp-result-count" id="filter-count">10 PROJECTS FOUND &rarr;</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROPERTIES SHOWCASE SECTION -->
+    <section id="properties-section" class="cinematic-properties">
+            
+            <div id="cp-bg-container">
+                <!-- Background images injected by JS -->
+            </div>
+            
+            <div class="cp-overlay"></div>
+
+            <div class="cp-section-header">SELECT YOUR SPACE.</div>
+
+            <div class="cp-content">
+                <div class="cp-left-panel">
+
+
+                    <div class="cp-meta" id="cp-meta">
+                        <!-- Type and Location -->
+                    </div>
+
+                    <h2 class="cp-title" id="cp-title">
+                        <!-- Property Title -->
+                    </h2>
+
+                    <p class="cp-description" id="cp-desc">
+                        <!-- Property Description -->
+                    </p>
+
+                    <div class="cp-empty-state" id="cp-empty-state" style="display: none;">
+                        <h2>NO PROPERTIES FOUND</h2>
+                        <p>Try adjusting your filters to see more results.</p>
+                    </div>
+
+                    <a href="#" class="cp-cta">Explore Property <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a>
+                </div>
+            </div>
+
+            <div class="cp-card-strip-wrapper">
+                <div class="cp-card-strip" id="cp-card-strip">
+                    <!-- Cards injected by JS -->
+                </div>
+            </div>
+
+            <div class="cp-bottom-nav">
+                <div class="cp-controls">
+                    <button class="cp-btn" id="cp-prev">
+                        <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg>
+                    </button>
+                    <button class="cp-btn" id="cp-next">
+                        <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+    <!-- CATEGORY MARQUEE -->
+    <div class="category-marquee-wrapper">
+        <div class="category-marquee-track">
+            <span>Premium Apartments. Private Villas. Integrated Communities. Plotted Developments. Lifestyle Clubs. Hotels & Resorts. Convention Centres. Schools & Institutions. Business Parks. Retail Destinations. Industrial & Logistics Infrastructure. Music & Cultural Experiences. PropTech Accelerators. Future Skills Academies.&nbsp;&nbsp;</span>
+            <span>Premium Apartments. Private Villas. Integrated Communities. Plotted Developments. Lifestyle Clubs. Hotels & Resorts. Convention Centres. Schools & Institutions. Business Parks. Retail Destinations. Industrial & Logistics Infrastructure. Music & Cultural Experiences. PropTech Accelerators. Future Skills Academies.&nbsp;&nbsp;</span>
+        </div>
+    </div>
+    
+    <!-- COMPANY STATS SECTION -->
+    <section class="company-stats-section">
+        <h2 class="cs-heading">Find Exceptional Properties<br>Worth Investing In</h2>
+        <div class="cs-stats-container">
+            <div class="cs-stat-item">
+                <div class="cs-stat-number-wrapper">
+                    <div class="cs-decor-diamond-1"></div>
+                    <div class="cs-decor-diamond-2"></div>
+                    <span class="cs-stat-number">40</span>
+                </div>
+                <span class="cs-stat-label">Years of<br>Excellence</span>
+            </div>
+            <div class="cs-stat-item">
+                <div class="cs-stat-number-wrapper">
+                    <div class="cs-decor-diamond-1"></div>
+                    <div class="cs-decor-diamond-2"></div>
+                    <span class="cs-stat-number">300+</span>
+                </div>
+                <span class="cs-stat-label">Projects<br>Completed</span>
+            </div>
+            <div class="cs-stat-item">
+                <div class="cs-stat-number-wrapper">
+                    <div class="cs-decor-diamond-1"></div>
+                    <div class="cs-decor-diamond-2"></div>
+                    <span class="cs-stat-number">50000+</span>
+                </div>
+                <span class="cs-stat-label">Happy<br>Customers</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- HORIZONTAL ABOUT EXPERIENCE -->
+    <div id="horizontal-about-wrapper">
+        <div class="horizontal-track">
+            
+            <!-- INTRO -->
+            <div class="h-panel panel-intro" style="width: 100vw; flex-direction: row; justify-content: flex-start; gap: 10vw; padding-left: 10vw;">
+                <h1 class="h-huge-title intro-title" style="font-size: 8vw; line-height: 1;">WE BUILD<br><span style="color: var(--primary-gold);">WITH</span><br>PURPOSE.</h1>
+                <div class="intro-paragraphs" style="max-width: 600px; font-size: 1.5vw; line-height: 1.6; color: #ccc;">
+                    <p style="margin-bottom: 1.5rem;">We believe exceptional spaces begin with a clear vision &mdash; and are defined by how thoughtfully they are brought to life.</p>
+                    <p style="margin-bottom: 1.5rem;">From the first idea to the final detail, we bring together architecture, engineering, craftsmanship and responsible development to create places that stand the test of time.</p>
+                    <p style="margin-bottom: 1.5rem;">Our work spans residential and commercial developments, where every decision is guided by quality, functionality and a deep understanding of the people and communities we build for.</p>
+                    <p style="margin-bottom: 1.5rem;">We don't simply construct buildings.</p>
+                    <p style="color: var(--primary-gold); font-weight: 500;">We create places with character, purpose and lasting value.</p>
+                </div>
+            </div>
+
+                <!-- CHAPTER 01: OUR STORY -->
+                <div class="h-panel panel-story">
+                    <div class="story-left">
+                        <h2 class="h-huge-title">OUR<br>STORY</h2>
+                        <p class="h-body fade-text">EVERYTHING BEGINS<br>WITH A VISION.</p>
+                    </div>
+                    <div class="story-right">
+                        <div class="mask-container diag-mask-1">
+                            <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop"
+                                class="parallax-img" alt="Our Story">
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- CHAPTER 04: OUR PHILOSOPHY -->
+                <div class="h-panel panel-philosophy">
+                    <div class="phil-title-col">
+                        <h2 class="h-huge-title">WHAT<br>WE<br>BELIEVE.</h2>
+                    </div>
+                    <div class="phil-content-col">
+                        <div class="phil-slide ps-1">
+                            <h3>PURPOSE</h3>
+                            <p>Every project begins with intent.</p>
+                            <div class="phil-img-mask"><img
+                                    src="https://images.unsplash.com/photo-1479839672679-a46483c0e7c8?q=80&w=2000&auto=format&fit=crop"
+                                    alt="Purpose"></div>
+                        </div>
+                        <div class="phil-slide ps-2">
+                            <h3>QUALITY</h3>
+                            <p>We never compromise on what matters.</p>
+                            <div class="phil-img-mask"><img
+                                    src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2000&auto=format&fit=crop"
+                                    alt="Quality"></div>
+                        </div>
+                        <div class="phil-slide ps-3">
+                            <h3>CRAFT</h3>
+                            <p>Details define the finished space.</p>
+                            <div class="phil-img-mask"><img
+                                    src="https://images.unsplash.com/photo-1479839672679-a46483c0e7c8?q=80&w=2000&auto=format&fit=crop"
+                                    alt="Craft"></div>
+                        </div>
+                        <div class="phil-slide ps-4">
+                            <h3>INTEGRITY</h3>
+                            <p>Trust is built into every decision.</p>
+                            <div class="phil-img-mask"><img
+                                    src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2000&auto=format&fit=crop"
+                                    alt="Integrity"></div>
+                        </div>
+                        <div class="phil-slide ps-5">
+                            <h3>LONGEVITY</h3>
+                            <p>We build for generations.</p>
+                            <div class="phil-img-mask"><img
+                                    src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2000&auto=format&fit=crop"
+                                    alt="Longevity"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CHAPTER 05: LEADERSHIP -->
+                <div class="h-panel panel-leadership">
+                    <div class="lead-title-col">
+                        <h2 class="h-large-statement">THE PEOPLE<br>BEHIND<br>THE VISION.</h2>
+                    </div>
+                    <div class="lead-portraits-col">
+                        <div class="leader-portrait lp-1">
+                            <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1974"
+                                alt="Leader 1">
+                            <div class="leader-text">
+                                <h4>[FOUNDER NAME]</h4>
+                                <p>Founder & CEO</p>
+                            </div>
+                        </div>
+                        <div class="leader-portrait lp-2">
+                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1976"
+                                alt="Leader 2">
+                            <div class="leader-text">
+                                <h4>[PARTNER NAME]</h4>
+                                <p>Managing Director</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHAPTER 07: MILESTONES -->
+        <div class="v-panel panel-milestones">
+            <div class="miles-title-col">
+                <h2 class="h-large-statement">THE JOURNEY<br>SO FAR.</h2>
+            </div>
+            <div class="timeline-nodes">
+                <div class="node">
+                    <h3>2010</h3>
+                    <p>FOUNDATION</p>
+                </div>
+                <div class="node">
+                    <h3>2014</h3>
+                    <p>FIRST DEVELOPMENT</p>
+                </div>
+                <div class="node">
+                    <h3>2018</h3>
+                    <p>EXPANSION</p>
+                </div>
+                <div class="node">
+                    <h3>2022</h3>
+                    <p>NEW CHAPTER</p>
+                </div>
+                <div class="node">
+                    <h3>TODAY</h3>
+                    <p>NEXT</p>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const canvas = document.getElementById("scroll-canvas");
+            const context = canvas.getContext("2d");
+
+            // Set canvas resolution to window size
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const frameCount = 300;
+            // Updated path to the new directory
+            const currentFrame = index => {
+                return `Architectural_Sketch/ezgif-frame-${index.toString().padStart(3, '0')}.jpg`;
+            };
+
+            const images = [];
+            let loadedImages = 0;
+
+            // Preload all images
+            for (let i = 1; i <= frameCount; i++) {
+                const img = new Image();
+                img.src = currentFrame(i);
+                images.push(img);
+                img.onload = () => {
+                    loadedImages++;
+                    // Draw the first frame as soon as it's loaded
+                    if (loadedImages === 1) {
+                        renderImage(1);
+                    }
+                };
+            }
+
+            function renderImage(index) {
+                const img = images[index - 1];
+                if (img && img.complete) {
+                    // Determine scale to cover the entire canvas
+                    const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+
+                    // Calculate position to center the image
+                    const x = (canvas.width / 2) - (img.width / 2) * scale;
+                    const y = (canvas.height / 2) - (img.height / 2) * scale;
+
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    context.drawImage(img, x, y, img.width * scale, img.height * scale);
+                }
+            }
+
+            // Handle window resizing (keep this to update canvas dimensions)
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                // The frame render will be handled by ScrollTrigger on resize automatically if we scrub it
+                // We'll just render the first frame initially if at top
+            });
+        </script>
+        <!-- GSAP for scroll animations -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+        
+        <script>
+            // Cinematic GSAP ScrollTrigger for Hero Image Sequence
+            document.addEventListener("DOMContentLoaded", () => {
+                gsap.registerPlugin(ScrollTrigger);
+
+                const heroSequence = { frame: 1 };
+
+                gsap.to(heroSequence, {
+                    frame: frameCount,
+                    roundProps: "frame",
+                    ease: "none",
+                    scrollTrigger: {
+                        trigger: "#hero",
+                        start: "top top",
+                        end: "100% bottom",
+                        scrub: true 
+                    },
+                    onUpdate: () => renderImage(Math.round(heroSequence.frame))
+                });
+            });
+        </script>
+        <!-- About Experience Animations -->
+        <script src="about.js"></script>
+
+        <script>
+            // Sidebar Toggle Logic
+            const sidebar = document.getElementById('main-sidebar');
+            
+            document.addEventListener('click', function(e) {
+                if (sidebar.contains(e.target)) {
+                    // Toggle if clicking inside the menu, unless it's a link
+                    if (!e.target.closest('a')) {
+                        sidebar.classList.toggle('expanded');
+                    }
+                } else {
+                    // Collapse if clicking anywhere outside the menu
+                    sidebar.classList.remove('expanded');
+                }
+            });
+
+            // Smooth scroll and active state for links
+            document.querySelectorAll('.sidebar .nav-item').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const targetId = this.getAttribute('href');
+                    if (targetId && targetId.startsWith('#') && targetId !== '#') {
+                        e.preventDefault();
+                        const targetElement = document.querySelector(targetId);
+                        if (targetElement) {
+                            const rect = targetElement.getBoundingClientRect();
+                            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                            window.scrollTo({
+                                top: rect.top + scrollTop,
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+                    
+                    // Update active class
+                    document.querySelectorAll('.sidebar .nav-item').forEach(n => n.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Collapse sidebar after clicking a link
+                    sidebar.classList.remove('expanded');
+                });
+            });
+        </script>
+        
+        <!-- Cinematic Properties Animations -->
+        <script src="properties.js"></script>
+</body>
+
+</html>
